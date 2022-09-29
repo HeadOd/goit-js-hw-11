@@ -1,10 +1,10 @@
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
-import { fetchSearch, fetchLoadMore, URL, imgPerPage } from './fetch_functions';
+import { fetchSearch, imgPerPage } from './fetch_functions';
 import { refs } from './refs';
 import { renderMarkup } from './renderMarkup';
 
 let page = 1;
-let correctUrl = null;
+let searchWord = null;
 
 refs.form.addEventListener('submit', onSearchWord);
 refs.button.addEventListener('click', loadMoreImg);
@@ -15,11 +15,10 @@ function onSearchWord(e) {
   refs.button.style.display = 'block';
 
   const {elements: { searchQuery }} = e.target;
-  const searchWord = searchQuery.value.trim();
-  correctUrl = `${URL}&q=${searchWord}`
+  searchWord = searchQuery.value.trim();
 
   try {
-  fetchSearch(correctUrl).then(imgs => {
+  fetchSearch(page, searchWord).then(imgs => {
     if(imgs.hits.length === 0) {
       refs.button.style.display = 'none';
       Notify.failure('Sorry, there are no images matching your search query. Please try again.');
@@ -38,7 +37,7 @@ function onSearchWord(e) {
 function loadMoreImg() {
   try{
     page += 1;
-    fetchLoadMore().then(newImg => {
+    fetchSearch(page, searchWord).then(newImg => {
       if(page === Math.ceil(newImg.totalHits / imgPerPage)) {
         refs.button.style.display = 'none';
         Notify.failure('We\'re sorry, but you\'ve reached the end of search results.');
@@ -50,5 +49,3 @@ function loadMoreImg() {
       console.log(error.message);
   }
 };
-
-export { correctUrl, page };
